@@ -27,27 +27,45 @@ jobs:
           sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 \
             libpangocairo-1.0-0 libcairo2 libgdk-pixbuf2.0-0
 
-      # ── Quarto セットアップ（TinyTeX は使わない）──────────
-      - name: Setup Quarto
+      # ── Quarto + TinyTeX セットアップ ────────────────────
+      - name: Setup Quarto with TinyTeX
         uses: quarto-dev/quarto-actions/setup@v2
-        # tinytex は使用しない: 代わりにシステム texlive を使用
+        with:
+          tinytex: true
 
-      # ── システム TeX Live + 日本語サポート ──────────────
-      # texlive-luatex: lualatex エンジン
-      # texlive-lang-japanese: luatexja + 日本語 TeX
-      # texlive-latex-extra: bxjscls (bxjsarticle) を含む
-      # fonts-noto-cjk: Noto CJK フォント（LuaLaTeX が参照）
-      - name: Install LaTeX (system texlive) and Japanese support
+      # ── TinyTeX を PATH に追加（for ループで安全に検索）──
+      # xargs を使わず shell ループで検索（exit code 問題を回避）
+      - name: Add TinyTeX to PATH
         run: |
-          sudo apt-get install -y \
-            texlive-luatex \
-            texlive-lang-japanese \
-            texlive-latex-extra \
-            fonts-noto-cjk
+          FOUND=0
+          for search_dir in "$HOME/.TinyTeX" /opt/TinyTeX /usr/local/TinyTeX; do
+            if [ -d "$search_dir/bin" ]; then
+              for bin_dir in "$search_dir/bin"/*/; do
+                if [ -f "${bin_dir}tlmgr" ]; then
+                  echo "TinyTeX found: $bin_dir"
+                  echo "$bin_dir" >> "$GITHUB_PATH"
+                  FOUND=1
+                  break 2
+                fi
+              done
+            fi
+          done
+          if [ "$FOUND" -eq 0 ]; then
+            echo "::warning::TinyTeX not found at expected locations"
+            # フォールバック: quarto install tinytex
+            quarto install tinytex --no-prompt || true
+          fi
+
+      # ── 日本語フォント + 必要な LaTeX パッケージ ─────────
+      # fontawesome5: Quarto の callout ブロックに必要
+      # bxjscls: bxjsarticle documentclass
+      # luatexja: LuaLaTeX 日本語組版
+      - name: Install Japanese font and LaTeX packages
+        run: |
+          sudo apt-get install -y fonts-noto-cjk
+          tlmgr install fontawesome5 bxjscls luatexja
 
       # ── Quarto レンダリング（HTML + PDF 同時生成）────────
-      # docs/quarto/ には git commit 済みの PDF があるため、
-      # PDF 生成に失敗してもデプロイは継続する
       - name: Render Quarto (HTML + PDF → docs/quarto/)
         run: |
           quarto render quarto/ || {

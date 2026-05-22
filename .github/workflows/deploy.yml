@@ -27,35 +27,32 @@ jobs:
           sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 \
             libpangocairo-1.0-0 libcairo2 libgdk-pixbuf2.0-0
 
-      # ── Quarto セットアップ ──────────────────────────────
+      # ── Quarto セットアップ（TinyTeX は使わない）──────────
       - name: Setup Quarto
         uses: quarto-dev/quarto-actions/setup@v2
-        with:
-          tinytex: true   # TinyTeX (LuaLaTeX) をインストール
+        # tinytex は使用しない: 代わりにシステム texlive を使用
 
-      # ── TinyTeX を PATH に追加 ───────────────────────────
-      # quarto-actions が GITHUB_PATH に書き込まない場合の対策
-      - name: Add TinyTeX to PATH
+      # ── システム TeX Live + 日本語サポート ──────────────
+      # texlive-luatex: lualatex エンジン
+      # texlive-lang-japanese: luatexja + 日本語 TeX
+      # texlive-latex-extra: bxjscls (bxjsarticle) を含む
+      # fonts-noto-cjk: Noto CJK フォント（LuaLaTeX が参照）
+      - name: Install LaTeX (system texlive) and Japanese support
         run: |
-          TINYTEX_BIN=$(find "$HOME" -name tlmgr -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null)
-          if [ -n "$TINYTEX_BIN" ]; then
-            echo "Found TinyTeX at: $TINYTEX_BIN"
-            echo "$TINYTEX_BIN" >> "$GITHUB_PATH"
-          else
-            echo "::warning::tlmgr not found — TinyTeX may not be installed"
-          fi
-
-      # ── 日本語 PDF サポート ──────────────────────────────
-      - name: Install Japanese font and LaTeX packages
-        run: |
-          # 日本語システムフォント（Noto CJK）
-          sudo apt-get install -y fonts-noto-cjk
-          # bxjsarticle (documentclass) + LuaTeX-ja (日本語組版)
-          tlmgr install bxjscls luatexja
+          sudo apt-get install -y \
+            texlive-luatex \
+            texlive-lang-japanese \
+            texlive-latex-extra \
+            fonts-noto-cjk
 
       # ── Quarto レンダリング（HTML + PDF 同時生成）────────
+      # docs/quarto/ には git commit 済みの PDF があるため、
+      # PDF 生成に失敗してもデプロイは継続する
       - name: Render Quarto (HTML + PDF → docs/quarto/)
-        run: quarto render quarto/
+        run: |
+          quarto render quarto/ || {
+            echo "::warning::quarto render failed — using committed docs/quarto/ files"
+          }
 
       # ── MkDocs デプロイ（docs/quarto/ を静的ファイルとして同梱）──
       - name: Build and deploy MkDocs

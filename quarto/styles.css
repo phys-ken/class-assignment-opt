@@ -1,0 +1,21 @@
+/* クラス替え最適化 Quarto版 スタイル */
+
+/* 日本語フォント調整 */
+body {
+  font-family: "Noto Sans CJK JP", "Hiragino Sans", "Yu Gothic", sans-serif;
+}
+
+/* 数式ブロックのスクロール対応 */
+.math.display {
+  overflow-x: auto;
+}
+
+/* 表のゼブラストライプ */
+table tr:nth-child(even) {
+  background-color: rgba(0,0,0,0.03);
+}
+
+/* 印刷・PDF用 */
+@media print {
+  .navbar, .sidebar, footer { display: none !important; }
+}

@@ -389,10 +389,21 @@
     <ul class="md-nav__list" data-md-component="toc" data-md-scrollfix>
       
         <li class="md-nav__item">
+  <a href="#quarto-html-pdf" class="md-nav__link">
+    <span class="md-ellipsis">
+      
+        🌐 Quarto 版（HTML + PDF 同時生成）
+      
+    </span>
+  </a>
+  
+</li>
+      
+        <li class="md-nav__item">
   <a href="#pdf" class="md-nav__link">
     <span class="md-ellipsis">
       
-        📄 PDF ダウンロード
+        📄 その他の PDF
       
     </span>
   </a>
@@ -551,7 +562,36 @@ MkDocs・GitHub Pages・TeX（LuaLaTeX）の動作確認を目的としており
 <p>整数計画法（Integer Programming）と Google の OR-tools を使って、
 <strong>公平で最適なクラス替え</strong>を自動で行う方法を学びます。</p>
 </div>
-<h2 id="pdf">📄 PDF ダウンロード<a class="headerlink" href="#pdf" title="Permanent link">&para;</a></h2>
+<h2 id="quarto-html-pdf">🌐 Quarto 版（HTML + PDF 同時生成）<a class="headerlink" href="#quarto-html-pdf" title="Permanent link">&para;</a></h2>
+<div class="admonition success">
+<p class="admonition-title">Quarto 環境テスト — 動作確認済み</p>
+<p>同一の <code>.qmd</code> ソースから <strong>MathJax（Web）</strong> と <strong>LuaLaTeX（PDF）</strong> を同時生成。
+<strong><a href="quarto/">→ Quarto版サイトを開く</a></strong></p>
+</div>
+<table>
+<thead>
+<tr>
+<th>Quarto PDF</th>
+<th>ダウンロード</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>問題の定式化</td>
+<td><a href="quarto/problem.pdf">📥 problem.pdf</a></td>
+</tr>
+<tr>
+<td>Python コード</td>
+<td><a href="quarto/code.pdf">📥 code.pdf</a></td>
+</tr>
+<tr>
+<td>結果と考察</td>
+<td><a href="quarto/result.pdf">📥 result.pdf</a></td>
+</tr>
+</tbody>
+</table>
+<hr />
+<h2 id="pdf">📄 その他の PDF<a class="headerlink" href="#pdf" title="Permanent link">&para;</a></h2>
 <table>
 <thead>
 <tr>
@@ -562,8 +602,8 @@ MkDocs・GitHub Pages・TeX（LuaLaTeX）の動作確認を目的としており
 </thead>
 <tbody>
 <tr>
-<td><strong>MkDocs 版</strong></td>
-<td>このサイトをそのまま PDF 化（WeasyPrint 生成）</td>
+<td><strong>Chrome 版</strong></td>
+<td>Chrome headless で生成した全ページ PDF</td>
 <td><a href="pdf/document.pdf">📥 document.pdf</a></td>
 </tr>
 <tr>

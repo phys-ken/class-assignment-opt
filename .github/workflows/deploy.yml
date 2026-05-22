@@ -33,6 +33,18 @@ jobs:
         with:
           tinytex: true   # TinyTeX (LuaLaTeX) をインストール
 
+      # ── TinyTeX を PATH に追加 ───────────────────────────
+      # quarto-actions が GITHUB_PATH に書き込まない場合の対策
+      - name: Add TinyTeX to PATH
+        run: |
+          TINYTEX_BIN=$(find "$HOME" -name tlmgr -type f 2>/dev/null | head -1 | xargs dirname 2>/dev/null)
+          if [ -n "$TINYTEX_BIN" ]; then
+            echo "Found TinyTeX at: $TINYTEX_BIN"
+            echo "$TINYTEX_BIN" >> "$GITHUB_PATH"
+          else
+            echo "::warning::tlmgr not found — TinyTeX may not be installed"
+          fi
+
       # ── 日本語 PDF サポート ──────────────────────────────
       - name: Install Japanese font and LaTeX packages
         run: |

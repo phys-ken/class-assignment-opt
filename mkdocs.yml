@@ -1,5 +1,5 @@
 site_name: クラス替え最適化 — 数学で解くクラス編成
-site_description: 整数計画法とOR-toolsを使ったクラス替え最適化の授業資料
+site_description: "🤖 Claude Code による環境テスト | 整数計画法とOR-toolsを使ったクラス替え最適化のデモ資料"
 site_author: phys-ken
 site_url: https://phys-ken.github.io/class-assignment-opt/
 
@@ -57,12 +57,19 @@ markdown_extensions:
       permalink: true
   - attr_list
 
+extra:
+  generator: false   # MkDocs のデフォルトフッターを無効化
+
 extra_javascript:
   - javascripts/mathjax.js
   - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
 
 extra_css:
   - stylesheets/extra.css
+
+copyright: >
+  🤖 Generated with <a href="https://claude.ai/code" target="_blank">Claude Code</a> (Anthropic) —
+  WSL2 開発環境テスト用サンプルコンテンツ
 
 nav:
   - ホーム: index.md

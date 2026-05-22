@@ -1,8 +1,21 @@
 # クラス替えを数学で解く
 
+!!! warning "🤖 Claude Code による環境テスト"
+    このサイトは **[Claude Code](https://claude.ai/code)（Anthropic）** を使った
+    WSL2 開発環境のテストとして自動生成されたサンプルコンテンツです。
+    MkDocs・GitHub Pages・TeX（LuaLaTeX）の動作確認を目的としており、
+    実際の授業資料ではありません。
+
 !!! info "この資料について"
     整数計画法（Integer Programming）と Google の OR-tools を使って、
     **公平で最適なクラス替え**を自動で行う方法を学びます。
+
+## 📄 PDF ダウンロード
+
+| PDF | 説明 | ダウンロード |
+|-----|------|------------|
+| **MkDocs 版** | このサイトをそのまま PDF 化（WeasyPrint 生成） | [📥 document.pdf](pdf/document.pdf) |
+| **TeX 版** | LuaLaTeX で組版した印刷用プリント | [📥 handout-tex.pdf](pdf/handout-tex.pdf) |
 
 ---
 

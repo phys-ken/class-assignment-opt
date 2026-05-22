@@ -1,0 +1,23 @@
+# MkDocs ビルド成果物
+site/
+
+# TeX 中間ファイル（out/main.pdf は残す）
+tex/out/*.aux
+tex/out/*.log
+tex/out/*.fls
+tex/out/*.fdb_latexmk
+tex/out/*.synctex.gz
+tex/out/*.bbl
+tex/out/*.blg
+tex/out/*.toc
+tex/out/*.out
+tex/out/*.bcf
+tex/out/*.run.xml
+
+# Python
+__pycache__/
+*.pyc
+.env
+
+# OS
+.DS_Store

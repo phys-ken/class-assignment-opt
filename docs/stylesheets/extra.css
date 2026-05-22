@@ -1,0 +1,15 @@
+/* 数式ブロックのスクロール */
+.arithmatex { overflow-x: auto; }
+
+/* 印刷・PDF用 */
+@media print {
+  .md-header, .md-sidebar, .md-footer { display: none !important; }
+  h1, h2 { page-break-before: always; }
+  h1:first-of-type { page-break-before: avoid; }
+  pre, table { page-break-inside: avoid; }
+}
+
+/* 表のゼブラ */
+.md-typeset table:not([class]) tr:nth-child(even) {
+  background-color: rgba(0,0,0,0.03);
+}

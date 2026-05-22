@@ -1,0 +1,85 @@
+% ============================================================
+% preamble.tex — 授業プリント共通設定
+% エンジン: LuaLaTeX + luatexja
+% ============================================================
+
+% --- 日本語対応 ---
+\usepackage{luatexja}
+\usepackage{luatexja-fontspec}
+
+% --- ページレイアウト ---
+\usepackage[
+  a4paper,
+  top=20mm, bottom=20mm,
+  left=20mm, right=20mm
+]{geometry}
+
+% --- 数式 ---
+\usepackage{amsmath}    % 基本数式環境
+\usepackage{amssymb}    % 数学記号
+\usepackage{amsfonts}   % 数学フォント
+\usepackage{physics}    % 物理記法 (\dv, \pdv, \abs, \qty, \vec など)
+
+% --- 単位 ---
+\usepackage{siunitx}
+\sisetup{
+  inter-unit-product = \ensuremath{{}\cdot{}},  % 単位間の区切り
+  output-decimal-marker = {.},
+  per-mode = symbol
+}
+
+% --- グラフ・図 ---
+\usepackage{tikz}
+\usepackage{pgfplots}
+\pgfplotsset{compat=1.18}
+\usetikzlibrary{arrows.meta, calc, positioning, decorations.pathmorphing}
+
+% --- その他 ---
+\usepackage{graphicx}      % 画像挿入
+\usepackage{float}         % 図の位置指定 [H]
+\usepackage{booktabs}      % きれいな表 (\toprule, \midrule, \bottomrule)
+\usepackage{multicol}      % 段組み
+\usepackage{enumitem}      % 箇条書きカスタマイズ
+\usepackage{tcolorbox}     % カラーボックス (解答欄など)
+\tcbuselibrary{most}
+\usepackage{mdframed}      % 枠囲み
+\usepackage{xcolor}        % 色
+
+% --- ハイパーリンク (最後に読み込む) ---
+\usepackage[hidelinks]{hyperref}
+
+% ============================================================
+% カスタムコマンド
+% ============================================================
+
+% 解答欄ボックス
+\newtcolorbox{answerbox}[1][解答]{
+  colback=gray!5,
+  colframe=gray!50,
+  fonttitle=\bfseries,
+  title=#1,
+  sharp corners,
+  boxrule=0.5pt
+}
+
+% 問題番号付き問題環境
+\newcounter{mondai}
+\newcommand{\mondai}[1][]{%
+  \stepcounter{mondai}%
+  \medskip
+  \noindent\textbf{問題 \themondai}\if\relax\detokenize{#1}\relax\else\ (#1)\fi\quad
+}
+
+% 物理でよく使うショートハンド
+\newcommand{\kgms}{\,\unit{kg.m/s^2}}
+\newcommand{\ms}{\,\unit{m/s}}
+\newcommand{\mss}{\,\unit{m/s^2}}
+
+% ヘッダー・フッター設定
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+\fancyhf{}
+\lhead{\small \textsf{\@title}}
+\rhead{\small \textsf{\@date}}
+\cfoot{\small \thepage}
+\renewcommand{\headrulewidth}{0.4pt}

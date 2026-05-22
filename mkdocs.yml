@@ -1,0 +1,71 @@
+site_name: クラス替え最適化 — 数学で解くクラス編成
+site_description: 整数計画法とOR-toolsを使ったクラス替え最適化の授業資料
+site_author: phys-ken
+site_url: https://phys-ken.github.io/class-assignment-opt/
+
+theme:
+  name: material
+  language: ja
+  palette:
+    - scheme: default
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-7
+        name: ダークモードに切り替え
+    - scheme: slate
+      primary: indigo
+      accent: blue
+      toggle:
+        icon: material/brightness-4
+        name: ライトモードに切り替え
+  features:
+    - navigation.tabs
+    - navigation.sections
+    - navigation.top
+    - toc.integrate
+    - search.suggest
+    - content.code.copy
+
+plugins:
+  - search:
+      lang: ja
+  - with-pdf:
+      author: phys-ken
+      copyright: CC BY 4.0
+      cover_title: クラス替え最適化
+      cover_subtitle: 整数計画法で解くクラス編成問題
+      output_path: pdf/document.pdf
+
+markdown_extensions:
+  - pymdownx.arithmatex:
+      generic: true
+  - pymdownx.highlight:
+      anchor_linenums: true
+  - pymdownx.inlinehilite
+  - pymdownx.superfences:
+      custom_fences:
+        - name: mermaid
+          class: mermaid
+          format: !!python/name:pymdownx.superfences.fence_code_format
+  - admonition
+  - pymdownx.details
+  - pymdownx.tabbed:
+      alternate_style: true
+  - tables
+  - toc:
+      permalink: true
+  - attr_list
+
+extra_javascript:
+  - javascripts/mathjax.js
+  - https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js
+
+extra_css:
+  - stylesheets/extra.css
+
+nav:
+  - ホーム: index.md
+  - 問題の定式化: problem.md
+  - Pythonコード: code.md
+  - 結果と考察: result.md

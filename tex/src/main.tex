@@ -1,0 +1,161 @@
+% ============================================================
+% main.tex — クラス替え最適化 授業プリント
+% エンジン: LuaLaTeX / ビルド: make (→ out/main.pdf)
+% ============================================================
+\documentclass[a4paper, 11pt, fleqn]{ltjsarticle}
+\input{preamble}
+
+\title{クラス替えを数学で解く\\
+       \large — 整数計画法入門 —}
+\date{\today}
+
+\begin{document}
+\maketitle
+\thispagestyle{fancy}
+
+\begin{tcolorbox}[colback=blue!5, colframe=blue!40, title=\textbf{学習目標}]
+  \begin{itemize}
+    \item 「最適化」とは何かを理解する
+    \item 0-1 変数を使って問題を数式で表現できる
+    \item 制約条件と目的関数の意味を説明できる
+  \end{itemize}
+\end{tcolorbox}
+
+\bigskip
+
+% ============================================================
+\section{問題設定}
+% ============================================================
+
+全校生徒 $n = 200$ 人を $k = 5$ クラスに割り当てる。
+各クラスは 38〜42 人、男女比はそれぞれ 18〜22 人とする。
+
+クラス替えの組み合わせ総数はおよそ
+
+\[
+  \binom{200}{40}\binom{160}{40}\binom{120}{40}\binom{80}{40} \approx 10^{130}
+\]
+
+であり、全探索は不可能である。そこで\textbf{整数計画法}を用いる。
+
+% ============================================================
+\section{数理最適化の3要素}
+% ============================================================
+
+\begin{tcolorbox}[colback=gray!5, colframe=gray!40]
+  数理最適化 = \textbf{変数} + \textbf{制約条件} + \textbf{目的関数}
+\end{tcolorbox}
+
+\subsection{決定変数}
+
+\[
+  x_{i,j} \in \{0, 1\}, \quad i = 1, \ldots, 200, \quad j = 1, \ldots, 5
+\]
+
+$x_{i,j} = 1$ のとき「生徒 $i$ はクラス $j$ に所属する」を意味する。
+変数の総数は $200 \times 5 = 1000$ 個。
+
+\subsection{制約条件}
+
+\begin{enumerate}[label=\textbf{制約\arabic*.}]
+
+  \item \textbf{各生徒は必ず 1 クラスに所属}
+  \[
+    \sum_{j=1}^{5} x_{i,j} = 1 \qquad (\forall\, i = 1, \ldots, 200)
+  \]
+
+  \item \textbf{クラスの人数バランス}
+  \[
+    38 \leq \sum_{i=1}^{200} x_{i,j} \leq 42 \qquad (\forall\, j = 1, \ldots, 5)
+  \]
+
+  \item \textbf{男女比のバランス}（男子の集合 $M$、女子の集合 $F$）
+  \[
+    18 \leq \sum_{i \in M} x_{i,j} \leq 22, \quad
+    18 \leq \sum_{i \in F} x_{i,j} \leq 22 \qquad (\forall\, j)
+  \]
+
+  \item \textbf{仲の悪いペア $(a, b)$ を別クラスに（任意）}
+  \[
+    x_{a,j} + x_{b,j} \leq 1 \qquad (\forall\, j = 1, \ldots, 5)
+  \]
+
+\end{enumerate}
+
+\subsection{目的関数}
+
+今回は「制約をすべて満たす解を 1 つ見つける」ことを目標とする
+（実行可能解の探索）。目的関数は設定しない。
+
+より発展的な問題では、たとえば「避けたいペアが同じクラスになる回数を最小化」
+する目的関数を追加できる。
+
+% ============================================================
+\section{OR-tools による求解}
+% ============================================================
+
+Google が開発した OR-tools の CP-SAT ソルバーを用いる。
+
+\begin{verbatim}
+from ortools.sat.python import cp_model
+
+model = cp_model.CpModel()
+
+# 決定変数
+x = [[model.NewBoolVar(f'x_{i}_{j}')
+      for j in range(5)] for i in range(200)]
+
+# 制約1: 各生徒は1クラスに所属
+for i in range(200):
+    model.AddExactlyOne(x[i][j] for j in range(5))
+
+# 制約2: 人数バランス
+for j in range(5):
+    model.Add(sum(x[i][j] for i in range(200)) >= 38)
+    model.Add(sum(x[i][j] for i in range(200)) <= 42)
+
+# 求解
+solver = cp_model.CpSolver()
+status = solver.Solve(model)
+\end{verbatim}
+
+計算時間は通常 \textbf{1 秒以内}。
+
+% ============================================================
+\section{考察}
+% ============================================================
+
+\mondai[基本]
+制約条件① $\displaystyle\sum_{j=1}^{5} x_{i,j} = 1$ が必要な理由を説明せよ。
+
+\begin{answerbox}
+  \vspace{2.5cm}
+\end{answerbox}
+
+\mondai[発展]
+「昨年同じクラスだった生徒ペアの集合 $Q$ を、できるだけ別クラスにしたい」
+という条件を制約または目的関数として定式化せよ。
+
+\begin{answerbox}
+  \vspace{3.5cm}
+\end{answerbox}
+
+% ============================================================
+\section*{まとめ}
+% ============================================================
+
+\begin{center}
+\begin{tabular}{ll}
+  \toprule
+  用語 & 意味 \\
+  \midrule
+  整数計画法 & 変数が整数（特に 0-1）に限定された最適化問題 \\
+  決定変数   & 値を決めるべき未知数 $x_{i,j} \in \{0,1\}$ \\
+  制約条件   & 解が満たすべき等式・不等式 \\
+  目的関数   & 最小化・最大化したい量 \\
+  CP-SAT     & Google OR-tools の制約プログラミングソルバー \\
+  \bottomrule
+\end{tabular}
+\end{center}
+
+\end{document}

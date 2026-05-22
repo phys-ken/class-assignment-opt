@@ -8,6 +8,16 @@ on:
 permissions:
   contents: write
 
+# ============================================================
+# Quarto のレンダリングはローカルで実施してコミットする運用。
+# CI は MkDocs のビルド・デプロイのみを担当。
+#
+# 【ローカル更新手順】
+#   1. quarto render quarto/   → docs/quarto/ に HTML + PDF を生成
+#   2. git add docs/quarto/
+#   3. git commit && git push  → CI が GitHub Pages にデプロイ
+# ============================================================
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
@@ -20,65 +30,19 @@ jobs:
         with:
           python-version: "3.12"
 
-      # ── MkDocs 依存インストール ──────────────────────────
       - name: Install MkDocs and plugins
         run: |
           pip install mkdocs mkdocs-material mkdocs-with-pdf
           sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 \
             libpangocairo-1.0-0 libcairo2 libgdk-pixbuf2.0-0
 
-      # ── Quarto + TinyTeX セットアップ ────────────────────
-      - name: Setup Quarto with TinyTeX
-        uses: quarto-dev/quarto-actions/setup@v2
-        with:
-          tinytex: true
-
-      # ── TinyTeX を PATH に追加（for ループで安全に検索）──
-      # xargs を使わず shell ループで検索（exit code 問題を回避）
-      - name: Add TinyTeX to PATH
-        run: |
-          FOUND=0
-          for search_dir in "$HOME/.TinyTeX" /opt/TinyTeX /usr/local/TinyTeX; do
-            if [ -d "$search_dir/bin" ]; then
-              for bin_dir in "$search_dir/bin"/*/; do
-                if [ -f "${bin_dir}tlmgr" ]; then
-                  echo "TinyTeX found: $bin_dir"
-                  echo "$bin_dir" >> "$GITHUB_PATH"
-                  FOUND=1
-                  break 2
-                fi
-              done
-            fi
-          done
-          if [ "$FOUND" -eq 0 ]; then
-            echo "::warning::TinyTeX not found at expected locations"
-            # フォールバック: quarto install tinytex
-            quarto install tinytex --no-prompt || true
-          fi
-
-      # ── 日本語フォント + 必要な LaTeX パッケージ ─────────
-      # fontawesome5: Quarto の callout ブロックに必要
-      # bxjscls: bxjsarticle documentclass
-      # luatexja: LuaLaTeX 日本語組版
-      - name: Install Japanese font and LaTeX packages
-        run: |
-          sudo apt-get install -y fonts-noto-cjk
-          tlmgr install fontawesome5 bxjscls luatexja
-
-      # ── Quarto レンダリング（HTML + PDF 同時生成）────────
-      - name: Render Quarto (HTML + PDF → docs/quarto/)
-        run: |
-          quarto render quarto/ || {
-            echo "::warning::quarto render failed — using committed docs/quarto/ files"
-          }
-
-      # ── MkDocs デプロイ（docs/quarto/ を静的ファイルとして同梱）──
-      - name: Build and deploy MkDocs
+      # docs/quarto/ は git 管理済み（ローカルで quarto render して commit）
+      # CI は MkDocs でそのまま静的ファイルとして同梱してデプロイする
+      - name: Build and deploy MkDocs (includes docs/quarto/)
         run: mkdocs gh-deploy --force --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      # ── アーティファクト保存 ─────────────────────────────
       - name: Upload Quarto PDF artifacts
         uses: actions/upload-artifact@v4
         with:

@@ -35,7 +35,10 @@ plugins:
       copyright: CC BY 4.0
       cover_title: クラス替え最適化
       cover_subtitle: 整数計画法で解くクラス編成問題
-      output_path: pdf/document.pdf
+      # WeasyPrint は MathJax(JS) を実行しないため空PDFになる既知の問題あり
+      # Chrome headless で生成した document.pdf を docs/pdf/ に静的配置して使用
+      # WeasyPrint版は別名で出力し上書きを防ぐ
+      output_path: pdf/weasyprint-debug.pdf
 
 markdown_extensions:
   - pymdownx.arithmatex:

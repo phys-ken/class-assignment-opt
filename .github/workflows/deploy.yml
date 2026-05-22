@@ -1,4 +1,4 @@
-name: Deploy MkDocs to GitHub Pages
+name: Deploy to GitHub Pages (MkDocs + Quarto)
 
 on:
   push:
@@ -20,20 +20,41 @@ jobs:
         with:
           python-version: "3.12"
 
+      # ── MkDocs 依存インストール ──────────────────────────
       - name: Install MkDocs and plugins
         run: |
           pip install mkdocs mkdocs-material mkdocs-with-pdf
           sudo apt-get install -y libpango-1.0-0 libpangoft2-1.0-0 \
             libpangocairo-1.0-0 libcairo2 libgdk-pixbuf2.0-0
 
-      - name: Build and deploy
+      # ── Quarto セットアップ ──────────────────────────────
+      - name: Setup Quarto
+        uses: quarto-dev/quarto-actions/setup@v2
+        with:
+          tinytex: true   # TinyTeX (LuaLaTeX) をインストール
+
+      # ── 日本語 PDF サポート ──────────────────────────────
+      - name: Install Japanese font and LaTeX packages
+        run: |
+          # 日本語システムフォント（Noto CJK）
+          sudo apt-get install -y fonts-noto-cjk
+          # bxjsarticle (documentclass) + LuaTeX-ja (日本語組版)
+          tlmgr install bxjscls luatexja
+
+      # ── Quarto レンダリング（HTML + PDF 同時生成）────────
+      - name: Render Quarto (HTML + PDF → docs/quarto/)
+        run: quarto render quarto/
+
+      # ── MkDocs デプロイ（docs/quarto/ を静的ファイルとして同梱）──
+      - name: Build and deploy MkDocs
         run: mkdocs gh-deploy --force --clean
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
-      - name: Upload PDF artifact
+      # ── アーティファクト保存 ─────────────────────────────
+      - name: Upload Quarto PDF artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: lesson-pdf
-          path: site/pdf/document.pdf
+          name: quarto-pdf
+          path: docs/quarto/*.pdf
           if-no-files-found: warn

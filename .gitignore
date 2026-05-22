@@ -1,6 +1,11 @@
 # MkDocs ビルド成果物
 site/
 
+# Quarto ビルドキャッシュ（中間ファイル）
+quarto/.quarto/
+# docs/quarto/ は Quarto の出力先 → git 管理（MkDocs が静的ファイルとして配信）
+# _freeze/ は CI 用にコミット対象（freeze: auto に必要）
+
 # TeX 中間ファイル（out/main.pdf は残す）
 tex/out/*.aux
 tex/out/*.log

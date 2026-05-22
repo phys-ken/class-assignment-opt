@@ -1,0 +1,156 @@
+[
+  {
+    "objectID": "index.html",
+    "href": "index.html",
+    "title": "クラス替えを数学で解く",
+    "section": "",
+    "text": "ノート\n\n\n\n🤖 Claude Code による Quarto 環境テスト このページは Quarto を使って、同一の .qmd ソースファイルから HTML（MathJax）と PDF（LuaLaTeX）を同時生成するデモです。 MkDocs版サイトはこちら"
+  },
+  {
+    "objectID": "index.html#quarto-版について",
+    "href": "index.html#quarto-版について",
+    "title": "クラス替えを数学で解く",
+    "section": "Quarto 版について",
+    "text": "Quarto 版について\n\n\n\n出力形式\nレンダリングエンジン\n特徴\n\n\n\n\n🌐 HTML\nMathJax\nブラウザで数式を表示、インタラクティブ\n\n\n📄 PDF\nLuaLaTeX + bxjsarticle\n印刷品質の日本語PDF\n\n\n\n各ページの右上の「PDF」ボタン（またはナビの PDF リンク）から PDF をダウンロードできます。"
+  },
+  {
+    "objectID": "index.html#なぜ最適化が必要か",
+    "href": "index.html#なぜ最適化が必要か",
+    "title": "クラス替えを数学で解く",
+    "section": "なぜ「最適化」が必要か",
+    "text": "なぜ「最適化」が必要か\n毎年恒例のクラス替え。先生たちは次のようなことを考えながら手作業で組み合わせを考えています。\n\n各クラスの人数をそろえる\n男女の比率をバランスよくする\n成績の分布が偏らないようにする\n仲の悪い生徒が同じクラスにならないようにする\n\n全校生徒 200 人を 5 クラスに分ける組み合わせの数は…\n\\[\n\\binom{200}{40}\\binom{160}{40}\\binom{120}{40}\\binom{80}{40} \\approx 10^{130}\n\\]\nこれは宇宙の原子の数（約 \\(10^{80}\\)）よりはるかに大きい数です。 全探索は不可能です。だから「数理最適化」の出番です。"
+  },
+  {
+    "objectID": "index.html#このサイトの構成",
+    "href": "index.html#このサイトの構成",
+    "title": "クラス替えを数学で解く",
+    "section": "このサイトの構成",
+    "text": "このサイトの構成\n\n\n\nページ\n内容\n\n\n\n\n問題の定式化\n変数・制約・目的関数を数式で書く\n\n\nPythonコード\nOR-tools CP-SAT ソルバーで解く\n\n\n結果と考察\n解の見方・現実への応用"
+  },
+  {
+    "objectID": "index.html#キーワード",
+    "href": "index.html#キーワード",
+    "title": "クラス替えを数学で解く",
+    "section": "キーワード",
+    "text": "キーワード\n\n整数計画法 (Integer Programming, IP): 変数が整数（0 or 1）に限定された最適化\nCP-SAT ソルバー: Google OR-tools に含まれる高速な制約プログラミングソルバー\n0-1 変数: \\(x \\in \\{0, 1\\}\\) — 「する/しない」を表す変数"
+  },
+  {
+    "objectID": "code.html",
+    "href": "code.html",
+    "title": "Python コード — OR-tools CP-SAT",
+    "section": "",
+    "text": "pip install ortools"
+  },
+  {
+    "objectID": "code.html#インストール",
+    "href": "code.html#インストール",
+    "title": "Python コード — OR-tools CP-SAT",
+    "section": "",
+    "text": "pip install ortools"
+  },
+  {
+    "objectID": "code.html#完全なコード",
+    "href": "code.html#完全なコード",
+    "title": "Python コード — OR-tools CP-SAT",
+    "section": "完全なコード",
+    "text": "完全なコード\n\"\"\"\nクラス替え最適化 — OR-tools CP-SAT ソルバー\n生徒200人を5クラスに割り当てる整数計画問題\n\"\"\"\n\nfrom ortools.sat.python import cp_model\nimport random\n\n# ── パラメータ ──────────────────────────────────────────\nN_STUDENTS = 200        # 全生徒数\nN_CLASSES  = 5          # クラス数\nCLASS_MIN  = 38         # 各クラスの最小人数\nCLASS_MAX  = 42         # 各クラスの最大人数\nGENDER_MIN = 18         # 各クラスの男女それぞれの最小人数\nGENDER_MAX = 22         # 各クラスの男女それぞれの最大人数\n\n# ── ダミーデータ（実際は外部ファイルから読み込む）──────\nrandom.seed(42)\n# 生徒の性別: 0=男, 1=女 (各100人)\ngenders = [0] * 100 + [1] * 100\nrandom.shuffle(genders)\n\n# 「同じクラスを避けたいペア」(例: 3組)\navoid_pairs = [(0, 1), (50, 51), (100, 150)]\n\n# ── モデルの構築 ────────────────────────────────────────\nmodel = cp_model.CpModel()\n\n# 決定変数: x[i][j] = 1 なら生徒i はクラスj に所属\nx = [[model.NewBoolVar(f'x_{i}_{j}')\n      for j in range(N_CLASSES)]\n     for i in range(N_STUDENTS)]\n\n# ── 制約条件 ────────────────────────────────────────────\n\n# ① 各生徒は必ず1クラスに所属\nfor i in range(N_STUDENTS):\n    model.AddExactlyOne(x[i][j] for j in range(N_CLASSES))\n\n# ② クラスの人数バランス\nfor j in range(N_CLASSES):\n    class_size = sum(x[i][j] for i in range(N_STUDENTS))\n    model.Add(class_size &gt;= CLASS_MIN)\n    model.Add(class_size &lt;= CLASS_MAX)\n\n# ③ 男女比のバランス\nfor j in range(N_CLASSES):\n    male_count   = sum(x[i][j] for i in range(N_STUDENTS) if genders[i] == 0)\n    female_count = sum(x[i][j] for i in range(N_STUDENTS) if genders[i] == 1)\n    model.Add(male_count   &gt;= GENDER_MIN)\n    model.Add(male_count   &lt;= GENDER_MAX)\n    model.Add(female_count &gt;= GENDER_MIN)\n    model.Add(female_count &lt;= GENDER_MAX)\n\n# ④ 避けたいペアを別クラスに\nfor (a, b) in avoid_pairs:\n    for j in range(N_CLASSES):\n        model.Add(x[a][j] + x[b][j] &lt;= 1)\n\n# ── ソルバーの実行 ──────────────────────────────────────\nsolver = cp_model.CpSolver()\nsolver.parameters.max_time_in_seconds = 30.0  # 最大30秒\n\nstatus = solver.Solve(model)\n\n# ── 結果の出力 ──────────────────────────────────────────\nif status in (cp_model.FEASIBLE, cp_model.OPTIMAL):\n    print(\"✅ 解が見つかりました！\\n\")\n    for j in range(N_CLASSES):\n        members = [i for i in range(N_STUDENTS) if solver.Value(x[i][j]) == 1]\n        males   = [i for i in members if genders[i] == 0]\n        females = [i for i in members if genders[i] == 1]\n        print(f\"クラス {j+1}: 合計{len(members)}人 \"\n              f\"(男{len(males)}人 / 女{len(females)}人)\")\nelse:\n    print(\"❌ 解が見つかりませんでした（制約が矛盾している可能性があります）\")"
+  },
+  {
+    "objectID": "code.html#実行結果の例",
+    "href": "code.html#実行結果の例",
+    "title": "Python コード — OR-tools CP-SAT",
+    "section": "実行結果の例",
+    "text": "実行結果の例\n✅ 解が見つかりました！\n\nクラス 1: 合計40人 (男20人 / 女20人)\nクラス 2: 合計40人 (男20人 / 女20人)\nクラス 3: 合計40人 (男20人 / 女20人)\nクラス 4: 合計40人 (男20人 / 女20人)\nクラス 5: 合計40人 (男20人 / 女20人)"
+  },
+  {
+    "objectID": "code.html#コードのポイント解説",
+    "href": "code.html#コードのポイント解説",
+    "title": "Python コード — OR-tools CP-SAT",
+    "section": "コードのポイント解説",
+    "text": "コードのポイント解説\n\nNewBoolVar — 0-1 変数の作成\nx[i][j] = model.NewBoolVar(f'x_{i}_{j}')\nCP-SAT の BoolVar は \\(\\{0, 1\\}\\) の値を取ります。 これが定式化の \\(x_{i,j} \\in \\{0,1\\}\\) に対応します。\n\n\nAddExactlyOne — ちょうど1つが真\nmodel.AddExactlyOne(x[i][j] for j in range(N_CLASSES))\n\\(\\sum_j x_{i,j} = 1\\) を表す便利なメソッドです。\n\n\nAdd — 不等式制約\nmodel.Add(class_size &gt;= CLASS_MIN)\nmodel.Add(class_size &lt;= CLASS_MAX)\nCP-SAT では線形式を Add で制約として追加します。\n\n\n\n\n\n\n警告非線形制約について\n\n\n\nx[a][j] * x[b][j] のような積は直接書けません。 補助変数 z = x[a][j] AND x[b][j] を使って線形化します。 今回の「ペアを分ける」制約は和で表現できるため問題ありません。"
+  },
+  {
+    "objectID": "result.html",
+    "href": "result.html",
+    "title": "結果と考察",
+    "section": "",
+    "text": "方法\n時間\n備考\n\n\n\n\n全探索\n事実上不可能\n組み合わせ数 \\(\\approx 10^{130}\\)\n\n\n手作業\n数時間〜数日\nベテラン教員でも困難\n\n\nCP-SAT ソルバー\n1秒以内\n制約が複雑でも対応可"
+  },
+  {
+    "objectID": "result.html#計算量の比較",
+    "href": "result.html#計算量の比較",
+    "title": "結果と考察",
+    "section": "",
+    "text": "方法\n時間\n備考\n\n\n\n\n全探索\n事実上不可能\n組み合わせ数 \\(\\approx 10^{130}\\)\n\n\n手作業\n数時間〜数日\nベテラン教員でも困難\n\n\nCP-SAT ソルバー\n1秒以内\n制約が複雑でも対応可"
+  },
+  {
+    "objectID": "result.html#結果の見方",
+    "href": "result.html#結果の見方",
+    "title": "結果と考察",
+    "section": "結果の見方",
+    "text": "結果の見方\n\ngraph TD\n    A[ソルバー実行] --&gt; B{実行可能解あり?}\n    B -- Yes --&gt; C[クラス編成を出力]\n    B -- No --&gt; D[制約を緩和して再実行]\n    C --&gt; E[教員が微調整]\n    E --&gt; F[決定]\n\n\n\n\n\n\n\n\n\n\nソルバーが「解なし」と返した場合、制約が厳しすぎる可能性があります。 たとえば「避けたいペアが多すぎる」など。制約を段階的に緩めて試します。"
+  },
+  {
+    "objectID": "result.html#発展的な話題",
+    "href": "result.html#発展的な話題",
+    "title": "結果と考察",
+    "section": "発展的な話題",
+    "text": "発展的な話題\n\nより複雑な目的関数\n実際の学校現場では、さらに多くの条件が加わります：\n\n部活のバランス: 各部活の主力選手が分散するよう\n学力層の分散: テストのスコア帯が各クラスで均等に\n過去のクラスメート: 昨年同じクラスだった生徒は分けるなど\n\nこれらも同様に 0-1 変数と線形制約で表現できます。\n\n\n多目的最適化\n複数の目標（人数バランス・男女バランス・学力バランス）を 同時に最適化したい場合は、重み付き目的関数を使います：\n\\[\n\\text{minimize} \\quad w_1 f_1 + w_2 f_2 + w_3 f_3\n\\]\nここで \\(f_1, f_2, f_3\\) はそれぞれのバランスの「悪さ」を測る指標、 \\(w_1, w_2, w_3\\) は優先度の重みです。"
+  },
+  {
+    "objectID": "result.html#数理最適化が使われている身近な例",
+    "href": "result.html#数理最適化が使われている身近な例",
+    "title": "結果と考察",
+    "section": "数理最適化が使われている身近な例",
+    "text": "数理最適化が使われている身近な例\n\n\n\n\n\n\nノート実際の応用例\n\n\n\n\n✈️ 航空会社のスケジューリング: 乗務員の勤務割り当て\n🏥 病院の人員配置: 看護師のシフト管理\n📦 物流: トラックの積み込みと配送ルート\n📡 通信: 電波の周波数割り当て\n\nクラス替えは、これらと同じ「割り当て問題（Assignment Problem）」の一種です。"
+  },
+  {
+    "objectID": "result.html#まとめ",
+    "href": "result.html#まとめ",
+    "title": "結果と考察",
+    "section": "まとめ",
+    "text": "まとめ\n\nクラス替えは \\(10^{130}\\) 通りの組み合わせを持つ困難な問題\n整数計画法で「変数・制約・目的関数」として定式化できる\nOR-tools CP-SAT ソルバーを使えば 1 秒以内に解ける\n現実の複雑な条件も、線形制約として追加できる\n\n\n\n\n\n\n\nヒント数学の力\n\n\n\n「最適化」は現代社会の至るところで使われています。 高校数学で学ぶ「連立不等式」の考え方がその基礎になっています。"
+  },
+  {
+    "objectID": "problem.html",
+    "href": "problem.html",
+    "title": "問題の定式化",
+    "section": "",
+    "text": "数理最適化では、問題を 「変数」「制約条件」「目的関数」 の3つで表現します。"
+  },
+  {
+    "objectID": "problem.html#問題の設定",
+    "href": "problem.html#問題の設定",
+    "title": "問題の定式化",
+    "section": "問題の設定",
+    "text": "問題の設定\n\n\n\n記号\n意味\n値\n\n\n\n\n\\(n\\)\n全生徒数\n200 人\n\n\n\\(k\\)\nクラス数\n5 クラス\n\n\n\\(n_j^{\\min}\\)\n各クラスの最小人数\n38 人\n\n\n\\(n_j^{\\max}\\)\n各クラスの最大人数\n42 人"
+  },
+  {
+    "objectID": "problem.html#決定変数",
+    "href": "problem.html#決定変数",
+    "title": "問題の定式化",
+    "section": "決定変数",
+    "text": "決定変数\n\\[\nx_{i,j} \\in \\{0, 1\\}, \\quad i = 1, \\ldots, 200, \\quad j = 1, \\ldots, 5\n\\]\n\n\n\n\n\n\nノート意味\n\n\n\n\\(x_{i,j} = 1\\) ならば「生徒 \\(i\\) はクラス \\(j\\) に所属する」 \\(x_{i,j} = 0\\) ならば「所属しない」\n\n\n変数の総数は \\(200 \\times 5 = \\mathbf{1000}\\) 個。"
+  },
+  {
+    "objectID": "problem.html#制約条件",
+    "href": "problem.html#制約条件",
+    "title": "問題の定式化",
+    "section": "制約条件",
+    "text": "制約条件\n\n① 各生徒は必ず1クラスに所属\n\\[\n\\sum_{j=1}^{5} x_{i,j} = 1 \\qquad \\forall i = 1, \\ldots, 200\n\\]\n「1クラスに重複して所属」や「どこにも所属しない」を禁止します。\n\n\n② クラスの人数バランス\n\\[\n38 \\leq \\sum_{i=1}^{200} x_{i,j} \\leq 42 \\qquad \\forall j = 1, \\ldots, 5\n\\]\n\n\n③ 男女比のバランス\n男子生徒の集合を \\(M\\)、女子生徒の集合を \\(F\\) とします（\\(|M|=|F|=100\\)）。\n\\[\n18 \\leq \\sum_{i \\in M} x_{i,j} \\leq 22 \\qquad \\forall j\n\\]\n\\[\n18 \\leq \\sum_{i \\in F} x_{i,j} \\leq 22 \\qquad \\forall j\n\\]\n\n\n④ 仲良しグループの分散（任意）\n特定の生徒ペア \\((a, b)\\) を同じクラスにしない場合：\n\\[\nx_{a,j} + x_{b,j} \\leq 1 \\qquad \\forall j = 1, \\ldots, 5\n\\]"
+  },
+  {
+    "objectID": "problem.html#目的関数",
+    "href": "problem.html#目的関数",
+    "title": "問題の定式化",
+    "section": "目的関数",
+    "text": "目的関数\n今回は実行可能解を1つ見つけることを目標とします（最小化・最大化の目的関数なし）。\nより進んだ設定では、たとえば次のような目的関数を追加できます：\n\\[\n\\text{minimize} \\quad \\sum_{(a,b) \\in P} \\sum_{j=1}^{5} x_{a,j} \\cdot x_{b,j}\n\\]\nここで \\(P\\) は「同じクラスを避けたいペアの集合」です。 ただし、これは非線形になるため、補助変数を使って線形化する必要があります。"
+  },
+  {
+    "objectID": "problem.html#定式化のまとめ",
+    "href": "problem.html#定式化のまとめ",
+    "title": "問題の定式化",
+    "section": "定式化のまとめ",
+    "text": "定式化のまとめ\n\\[\n\\begin{aligned}\n&\\text{find} && x_{i,j} \\in \\{0,1\\} \\\\\n&\\text{subject to} \\\\\n&\\quad \\sum_{j=1}^{5} x_{i,j} = 1 && \\forall i \\\\\n&\\quad 38 \\leq \\sum_{i=1}^{200} x_{i,j} \\leq 42 && \\forall j \\\\\n&\\quad 18 \\leq \\sum_{i \\in M} x_{i,j} \\leq 22 && \\forall j \\\\\n&\\quad 18 \\leq \\sum_{i \\in F} x_{i,j} \\leq 22 && \\forall j\n\\end{aligned}\n\\]\n\n\n\n\n\n\nヒント実行可能性\n\n\n\n制約が矛盾していなければ、CP-SAT ソルバーは非常に高速に解を見つけます。 1000 変数・1000 制約程度なら通常 1秒以内 に解けます。"
+  }
+]

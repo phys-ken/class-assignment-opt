@@ -1,0 +1,136 @@
+---
+title: "Python コード — OR-tools CP-SAT"
+---
+
+## インストール
+
+```bash
+pip install ortools
+```
+
+## 完全なコード
+
+```python
+"""
+クラス替え最適化 — OR-tools CP-SAT ソルバー
+生徒200人を5クラスに割り当てる整数計画問題
+"""
+
+from ortools.sat.python import cp_model
+import random
+
+# ── パラメータ ──────────────────────────────────────────
+N_STUDENTS = 200        # 全生徒数
+N_CLASSES  = 5          # クラス数
+CLASS_MIN  = 38         # 各クラスの最小人数
+CLASS_MAX  = 42         # 各クラスの最大人数
+GENDER_MIN = 18         # 各クラスの男女それぞれの最小人数
+GENDER_MAX = 22         # 各クラスの男女それぞれの最大人数
+
+# ── ダミーデータ（実際は外部ファイルから読み込む）──────
+random.seed(42)
+# 生徒の性別: 0=男, 1=女 (各100人)
+genders = [0] * 100 + [1] * 100
+random.shuffle(genders)
+
+# 「同じクラスを避けたいペア」(例: 3組)
+avoid_pairs = [(0, 1), (50, 51), (100, 150)]
+
+# ── モデルの構築 ────────────────────────────────────────
+model = cp_model.CpModel()
+
+# 決定変数: x[i][j] = 1 なら生徒i はクラスj に所属
+x = [[model.NewBoolVar(f'x_{i}_{j}')
+      for j in range(N_CLASSES)]
+     for i in range(N_STUDENTS)]
+
+# ── 制約条件 ────────────────────────────────────────────
+
+# ① 各生徒は必ず1クラスに所属
+for i in range(N_STUDENTS):
+    model.AddExactlyOne(x[i][j] for j in range(N_CLASSES))
+
+# ② クラスの人数バランス
+for j in range(N_CLASSES):
+    class_size = sum(x[i][j] for i in range(N_STUDENTS))
+    model.Add(class_size >= CLASS_MIN)
+    model.Add(class_size <= CLASS_MAX)
+
+# ③ 男女比のバランス
+for j in range(N_CLASSES):
+    male_count   = sum(x[i][j] for i in range(N_STUDENTS) if genders[i] == 0)
+    female_count = sum(x[i][j] for i in range(N_STUDENTS) if genders[i] == 1)
+    model.Add(male_count   >= GENDER_MIN)
+    model.Add(male_count   <= GENDER_MAX)
+    model.Add(female_count >= GENDER_MIN)
+    model.Add(female_count <= GENDER_MAX)
+
+# ④ 避けたいペアを別クラスに
+for (a, b) in avoid_pairs:
+    for j in range(N_CLASSES):
+        model.Add(x[a][j] + x[b][j] <= 1)
+
+# ── ソルバーの実行 ──────────────────────────────────────
+solver = cp_model.CpSolver()
+solver.parameters.max_time_in_seconds = 30.0  # 最大30秒
+
+status = solver.Solve(model)
+
+# ── 結果の出力 ──────────────────────────────────────────
+if status in (cp_model.FEASIBLE, cp_model.OPTIMAL):
+    print("✅ 解が見つかりました！\n")
+    for j in range(N_CLASSES):
+        members = [i for i in range(N_STUDENTS) if solver.Value(x[i][j]) == 1]
+        males   = [i for i in members if genders[i] == 0]
+        females = [i for i in members if genders[i] == 1]
+        print(f"クラス {j+1}: 合計{len(members)}人 "
+              f"(男{len(males)}人 / 女{len(females)}人)")
+else:
+    print("❌ 解が見つかりませんでした（制約が矛盾している可能性があります）")
+```
+
+## 実行結果の例
+
+```
+✅ 解が見つかりました！
+
+クラス 1: 合計40人 (男20人 / 女20人)
+クラス 2: 合計40人 (男20人 / 女20人)
+クラス 3: 合計40人 (男20人 / 女20人)
+クラス 4: 合計40人 (男20人 / 女20人)
+クラス 5: 合計40人 (男20人 / 女20人)
+```
+
+## コードのポイント解説
+
+### `NewBoolVar` — 0-1 変数の作成
+
+```python
+x[i][j] = model.NewBoolVar(f'x_{i}_{j}')
+```
+
+CP-SAT の `BoolVar` は $\{0, 1\}$ の値を取ります。
+これが定式化の $x_{i,j} \in \{0,1\}$ に対応します。
+
+### `AddExactlyOne` — ちょうど1つが真
+
+```python
+model.AddExactlyOne(x[i][j] for j in range(N_CLASSES))
+```
+
+$\sum_j x_{i,j} = 1$ を表す便利なメソッドです。
+
+### `Add` — 不等式制約
+
+```python
+model.Add(class_size >= CLASS_MIN)
+model.Add(class_size <= CLASS_MAX)
+```
+
+CP-SAT では線形式を `Add` で制約として追加します。
+
+::: {.callout-warning title="非線形制約について"}
+`x[a][j] * x[b][j]` のような積は直接書けません。
+補助変数 `z = x[a][j] AND x[b][j]` を使って線形化します。
+今回の「ペアを分ける」制約は和で表現できるため問題ありません。
+:::

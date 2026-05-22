@@ -10,11 +10,25 @@
     整数計画法（Integer Programming）と Google の OR-tools を使って、
     **公平で最適なクラス替え**を自動で行う方法を学びます。
 
-## 📄 PDF ダウンロード
+## 🌐 Quarto 版（HTML + PDF 同時生成）
+
+!!! success "Quarto 環境テスト — 動作確認済み"
+    同一の `.qmd` ソースから **MathJax（Web）** と **LuaLaTeX（PDF）** を同時生成。
+    **[→ Quarto版サイトを開く](quarto/)**
+
+| Quarto PDF | ダウンロード |
+|------------|------------|
+| 問題の定式化 | [📥 problem.pdf](quarto/problem.pdf) |
+| Python コード | [📥 code.pdf](quarto/code.pdf) |
+| 結果と考察 | [📥 result.pdf](quarto/result.pdf) |
+
+---
+
+## 📄 その他の PDF
 
 | PDF | 説明 | ダウンロード |
 |-----|------|------------|
-| **MkDocs 版** | このサイトをそのまま PDF 化（WeasyPrint 生成） | [📥 document.pdf](pdf/document.pdf) |
+| **Chrome 版** | Chrome headless で生成した全ページ PDF | [📥 document.pdf](pdf/document.pdf) |
 | **TeX 版** | LuaLaTeX で組版した印刷用プリント | [📥 handout-tex.pdf](pdf/handout-tex.pdf) |
 
 ---

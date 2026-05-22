@@ -1,0 +1,88 @@
+# ============================================================
+# _quarto.yml — クラス替え最適化 Quarto版
+# 出力先: ../docs/quarto/ (MkDocs が静的ファイルとして配信)
+# ============================================================
+
+project:
+  type: website
+  output-dir: ../docs/quarto
+
+# ============================================================
+# Web サイト設定
+# ============================================================
+website:
+  title: "クラス替え最適化 — Quarto版"
+  site-url: "https://phys-ken.github.io/class-assignment-opt/quarto/"
+  description: "🤖 Claude Code による Quarto 環境テスト | 同一ソースから HTML + PDF を同時生成"
+
+  navbar:
+    left:
+      - href: index.qmd
+        text: ホーム
+      - href: problem.qmd
+        text: 問題の定式化
+      - href: code.qmd
+        text: Pythonコード
+      - href: result.qmd
+        text: 結果と考察
+    right:
+      - icon: github
+        href: "https://github.com/phys-ken/class-assignment-opt"
+        aria-label: GitHub
+
+  page-footer:
+    left: "🤖 Generated with [Claude Code](https://claude.ai/code) (Anthropic) — Quarto 環境テスト"
+    right:
+      - text: "MkDocs版サイトへ"
+        href: "https://phys-ken.github.io/class-assignment-opt/"
+
+  search: true
+
+# ============================================================
+# HTML 出力設定
+# ============================================================
+format:
+  html:
+    theme: cosmo
+    lang: ja
+    toc: true
+    toc-depth: 3
+    number-sections: false
+    html-math-method: mathjax
+    highlight-style: github
+    code-fold: false
+    code-tools: true
+    css: styles.css
+
+  # PDF 出力設定（日本語 + LuaLaTeX）
+  pdf:
+    pdf-engine: lualatex
+    documentclass: bxjsarticle
+    classoption:
+      - pandoc
+      - ja=standard
+    lang: ja
+    mainfont: "Noto Serif CJK JP"
+    sansfont: "Noto Sans CJK JP"
+    monofont: "Noto Sans Mono CJK JP"
+    fontsize: 11pt
+    geometry:
+      - top=25mm
+      - bottom=25mm
+      - left=25mm
+      - right=25mm
+    toc: false
+    number-sections: true
+    colorlinks: true
+    include-in-header:
+      text: |
+        \usepackage{amsmath}
+
+# ============================================================
+# コード実行設定（実行なし・表示のみ）
+# ============================================================
+execute:
+  freeze: auto
+  echo: true
+  eval: false   # コードは表示するが実行しない（実行環境不要）
+  warning: false
